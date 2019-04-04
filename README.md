@@ -1,4 +1,4 @@
-# Naval Battle
+# Ship Battle
 
 ## Goals
 
@@ -17,7 +17,7 @@ Cada programa deverá dispor a sua própria `esquadra` num tabuleiro. A esquadra
 - 4 submarinos
 - 4 hidroaviões
 
-![Desenho das Naves](https://sites.google.com/site/alvarodegas/_/rsrc/1468757393193/home/academico/disciplinas/old-but-gold/2012-1/ia/projeto-2012-1/esquadra.png?height=175&width=200)
+![Desenho das Embarcações](https://sites.google.com/site/alvarodegas/_/rsrc/1468757393193/home/academico/disciplinas/old-but-gold/2012-1/ia/projeto-2012-1/esquadra.png?height=175&width=200)
 
 O tabuleiro onde cada nave deve ser alocada mede 10x10, conforme a figura abaixo.
 
@@ -27,10 +27,10 @@ Cada nave pode estar disposta em qualquer posição possível.
 
 ## Restrictions
 
-- As naves não podem ser adjacentes umas às outras, seja na horizonta, vertical ou na diagonal.
-- Todas as naves devem ser posicionadas.
+- As embarcações não podem ser adjacentes umas às outras, seja na horizonta, vertical ou na diagonal.
+- Todas as embarcações devem ser posicionadas.
 
-![Naves posicionadas](https://sites.google.com/site/alvarodegas/_/rsrc/1468757393482/home/academico/disciplinas/old-but-gold/2012-1/ia/projeto-2012-1/jogo_pronto.png?height=196&width=200)
+![Embarcações posicionadas](https://sites.google.com/site/alvarodegas/_/rsrc/1468757393482/home/academico/disciplinas/old-but-gold/2012-1/ia/projeto-2012-1/jogo_pronto.png?height=196&width=200)
 
 ## How to Play
 
