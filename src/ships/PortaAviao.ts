@@ -1,4 +1,4 @@
-import { Coordinate, Orientation, Ship } from './objects'
+import { Coordinate, Orientation, Ship } from '../objects'
 
 class PortaAviao extends Ship {
   public constructor (start?: Coordinate, orientation?: Orientation) {
