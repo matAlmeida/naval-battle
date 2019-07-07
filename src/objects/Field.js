@@ -17,6 +17,16 @@ class Field {
     return this.__field[position];
   }
 
+  get size() {
+    const size = 0 + this.__size;
+
+    return size;
+  }
+
+  get fieldAsArray() {
+    return [...this.__field];
+  }
+
   place(x, y, item) {
     const position = this.__size * y + x;
 
@@ -92,16 +102,6 @@ class Field {
     } catch (error) {
       return false;
     }
-  }
-
-  get size() {
-    const size = 0 + this.__size;
-
-    return size;
-  }
-
-  get fieldAsArray() {
-    return [...this.__field];
   }
 }
 
