@@ -12,9 +12,13 @@ class Field {
   }
 
   get(x, y) {
-    const position = this.__size * y + x;
+    if (x >= 0 && x < this.__size && y >= 0 && y < this.__size) {
+      const position = this.__size * y + x;
 
-    return this.__field[position];
+      return this.__field[position];
+    }
+
+    return undefined;
   }
 
   get size() {
@@ -44,10 +48,14 @@ class Field {
   }
 
   cleanPosition(x, y) {
-    const position = this.__size * y + x;
-    this.__field[position] = null;
+    if (x >= 0 && x < this.__size && y >= 0 && y < this.__size) {
+      const position = this.__size * y + x;
+      this.__field[position] = null;
 
-    return true;
+      return true;
+    }
+
+    return false;
   }
 
   placeSet(x, y, direction, set) {
@@ -84,15 +92,13 @@ class Field {
     try {
       if (direction === DIRECTIONS.DOWN) {
         for (let i = 0; i < lenght; i++) {
-          const position = this.__size * (y + i) + x;
-          this.__field[position] = null;
+          this.cleanPosition(x, y + i);
         }
 
         return true;
       } else if (direction === DIRECTIONS.RIGHT) {
         for (let i = 0; i < lenght; i++) {
-          const position = this.__size * y + x + i;
-          this.__field[position] = null;
+          this.cleanPosition(x + i, y);
         }
 
         return true;
