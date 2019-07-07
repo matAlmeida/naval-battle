@@ -70,6 +70,30 @@ class Field {
     return true;
   }
 
+  cleanSet(x, y, direction, lenght) {
+    try {
+      if (direction === DIRECTIONS.DOWN) {
+        for (let i = 0; i < lenght; i++) {
+          const position = this.__size * (y + i) + x;
+          this.__field[position] = null;
+        }
+
+        return true;
+      } else if (direction === DIRECTIONS.RIGHT) {
+        for (let i = 0; i < lenght; i++) {
+          const position = this.__size * y + x + i;
+          this.__field[position] = null;
+        }
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
   get size() {
     const size = 0 + this.__size;
 

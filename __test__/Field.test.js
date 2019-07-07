@@ -90,9 +90,7 @@ describe("Field", () => {
 
           expect(placedCorrectly).toBe(true);
 
-          field.cleanPosition(1, 1);
-          field.cleanPosition(1, 2);
-          field.cleanPosition(1, 3);
+          field.cleanSet(1, 1, Field.DIRECTIONS.DOWN, ship.length);
         });
 
         it("place RIGHT", () => {
@@ -108,9 +106,7 @@ describe("Field", () => {
 
           expect(placedCorrectly).toBe(true);
 
-          field.cleanPosition(1, 1);
-          field.cleanPosition(2, 1);
-          field.cleanPosition(3, 1);
+          field.cleanSet(1, 1, Field.DIRECTIONS.RIGHT, ship.length);
         });
       });
     });
