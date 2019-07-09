@@ -109,6 +109,24 @@ describe("Field", () => {
           field.cleanSet(1, 1, Field.DIRECTIONS.RIGHT, ship.length);
         });
       });
+
+      it("can't place with different adjacent", () => {
+        field.place(1, 1, "s1");
+        const placed = field.place(1, 2, "s2");
+
+        expect(placed).toBe(false);
+        field.cleanPosition(1, 1);
+        field.cleanPosition(1, 2);
+      });
+
+      it("can place with same adjacent", () => {
+        field.place(1, 1, "s1");
+        const placed = field.place(1, 2, "s1");
+
+        expect(placed).toBe(true);
+        field.cleanPosition(1, 1);
+        field.cleanPosition(1, 2);
+      });
     });
   });
 });

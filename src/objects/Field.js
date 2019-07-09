@@ -31,12 +31,39 @@ class Field {
     return [...this.__field];
   }
 
-  place(x, y, item) {
+  checkIfCanPlace(x, y, item, hasSame = "") {
+    const p = this.get(x, y);
+    const up = this.get(x, y - 1);
+    const right = this.get(x + 1, y);
+    const down = this.get(x, y + 1);
+    const left = this.get(x - 1, y);
+
+    const noAdjacent = !up && !right && !down && !left;
+    let same = false;
+
+    if (hasSame === "") {
+      same = up === item || right === item || down === item || left === item;
+    } else {
+      same =
+        up === item[hasSame] ||
+        right === item[hasSame] ||
+        down === item[hasSame] ||
+        left === item[hasSame];
+    }
+
+    if (p === null && (noAdjacent || same)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  place(x, y, item, idField = "") {
     const position = this.__size * y + x;
 
     try {
-      const canPlace = this.get(x, y);
-      if (canPlace === null) {
+      const canPlace = this.checkIfCanPlace(x, y, item, idField);
+      if (canPlace === true) {
         this.__field[position] = item;
         return true;
       }
