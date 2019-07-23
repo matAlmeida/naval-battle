@@ -31,6 +31,19 @@ class Field {
     return [...this.__field];
   }
 
+  toString() {
+    let string = ""
+
+    for(let i = 0; i < this.__size; i++) {
+      for(let j = 0; j < this.__size; j++) {
+        string += `${this.get(i, j)}` + "\t"
+      }
+      string += "\n"
+    }
+
+    return string
+  }
+
   checkIfCanPlace(x, y, item, hasSame = "") {
     const p = this.get(x, y);
     const up = this.get(x, y - 1);
