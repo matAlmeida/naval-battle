@@ -1,4 +1,4 @@
-const SpecialField = require("../src/objects/SpecialField");
+const SpecialField = require("../src/objects/Field").SpecialField;
 
 describe("SpecialField", () => {
   describe("should", () => {

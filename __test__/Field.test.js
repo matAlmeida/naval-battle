@@ -1,4 +1,4 @@
-const Field = require("../src/objects/Field");
+const Field = require("../src/objects/Field/").Field;
 
 describe("Field", () => {
   describe("should", () => {
