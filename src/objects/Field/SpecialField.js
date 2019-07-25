@@ -30,6 +30,30 @@ class SpecialField extends Field {
 
         return true;
       }
+    } else if (direction === this.__DIRECTIONS.UP) {
+      const top = this.get(x, y) === null;
+      const left = this.get(x + 1, y - 1) === null;
+      const right = this.get(x - 1, y - 1) === null;
+
+      if (top && left && right) {
+        this.place(x, y, item);
+        this.place(x + 1, y - 1, item);
+        this.place(x - 1, y - 1, item);
+
+        return true;
+      }
+    } else if (direction === this.__DIRECTIONS.LEFT) {
+      const top = this.get(x, y) === null;
+      const left = this.get(x - 1, y - 1) === null;
+      const right = this.get(x - 1, y + 1) === null;
+
+      if (top && left && right) {
+        this.place(x, y, item);
+        this.place(x - 1, y - 1, item);
+        this.place(x - 1, y + 1, item);
+
+        return true;
+      }
     }
 
     return false;

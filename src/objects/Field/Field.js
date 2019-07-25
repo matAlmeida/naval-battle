@@ -1,4 +1,4 @@
-const DIRECTIONS = { RIGHT: "up", DOWN: "down" };
+const DIRECTIONS = { RIGHT: "right", DOWN: "down", LEFT: "left", UP: "up" };
 
 class Field {
   constructor(size) {
@@ -32,16 +32,15 @@ class Field {
   }
 
   toString() {
-    let string = ""
+    let string = "";
 
-    for(let i = 0; i < this.__size; i++) {
-      for(let j = 0; j < this.__size; j++) {
-        string += `${this.get(i, j)}` + "\t"
-      }
-      string += "\n"
-    }
+    this.__field.map((item, index) => {
+      string += `${
+        index != 0 && index % this.size === 0 ? "\n" : index === 0 ? "" : "\t"
+      }${item}`;
+    });
 
-    return string
+    return string;
   }
 
   checkIfCanPlace(x, y, item, hasSame = "") {
@@ -111,6 +110,18 @@ class Field {
 
         if (gotItem === null) {
           return [...agg, [x + index, y, item]];
+        }
+      } else if (direction === DIRECTIONS.UP) {
+        const gotItem = this.get(x, y - index);
+
+        if (gotItem === null) {
+          return [...agg, [x, y - index, item]];
+        }
+      } else if (direction === DIRECTIONS.LEFT) {
+        const gotItem = this.get(x - index, y);
+
+        if (gotItem === null) {
+          return [...agg, [x - index, y, item]];
         }
       }
 
