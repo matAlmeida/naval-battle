@@ -3,7 +3,18 @@ package field
 import (
 	"errors"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/matalmeida/shipbattle/item"
+)
+
+type Direcao int32
+
+const (
+	Cima     Direcao = 0
+	Direita  Direcao = 1
+	Baixo    Direcao = 2
+	Esquerda Direcao = 3
 )
 
 type Campo struct {
@@ -58,9 +69,12 @@ func (c *Campo) LimpaPosicao(x int, y int) {
 }
 
 func (c *Campo) checaAdjacentes(x int, y int, i *item.Item) (bool, error) {
-	_, err := c.GetItem(x, y)
+	i, err := c.GetItem(x, y)
 	if err != nil {
 		return false, errors.New("item não existe")
+	}
+	if i.Tipo != item.Vazio {
+		return false, errors.New("já tem um item")
 	}
 
 	upleft, _ := c.GetItem(x-1, y-1)
@@ -83,13 +97,75 @@ func (c *Campo) checaAdjacentes(x int, y int, i *item.Item) (bool, error) {
 	}
 }
 
-func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave) bool {
+func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...Direcao) bool {
 	i := item.Novo(id, tipo)
-	_, err := c.checaAdjacentes(x, y, i)
-	if err != nil {
+	podeColocar, _ := c.checaAdjacentes(x, y, i)
+	if !podeColocar {
 		return false
 	}
 
-	c.itens[x][y] = i
+	backup := Novo(10)
+	copier.Copy(&backup, &c)
+	canPlace := true
+
+	if tipo != item.Hidroaviao && tipo != item.Vazio {
+		dir := Direita
+
+		if len(direcao) > 0 {
+			dir = direcao[0]
+		}
+
+		for j := 0; j < int(tipo); j++ {
+			switch dir {
+			case Cima:
+				podeColocar, _ = backup.checaAdjacentes(x-j, y, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+					break
+				}
+				backup.itens[x-j][y] = i
+			case Baixo:
+				podeColocar, _ = backup.checaAdjacentes(x+j, y, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+					break
+				}
+				backup.itens[x+j][y] = i
+			case Esquerda:
+				podeColocar, _ = backup.checaAdjacentes(x, y-j, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+					break
+				}
+				backup.itens[x][y-j] = i
+			default:
+				podeColocar, _ = backup.checaAdjacentes(x, y+j, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+					break
+				}
+				backup.itens[x][y+j] = i
+			}
+		}
+
+		if canPlace {
+			for j := 0; j < int(tipo); j++ {
+				switch dir {
+				case Cima:
+					c.itens[x-j][y] = i
+				case Baixo:
+					c.itens[x+j][y] = i
+				case Esquerda:
+					c.itens[x][y-j] = i
+				default:
+					c.itens[x][y+j] = i
+				}
+			}
+		} else {
+			return false
+		}
+
+	}
+
 	return true
 }
