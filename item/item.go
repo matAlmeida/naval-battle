@@ -5,11 +5,12 @@ type Nave int32
 const (
 	Vazio Nave = 0
 
-	PortaAviao Nave = 1
-	Cruzador   Nave = 2
-	Destroyer  Nave = 3
-	Submarino  Nave = 4
-	Hidroaviao Nave = 5
+	Submarino  Nave = 1
+	Destroyer  Nave = 2
+	Cruzador   Nave = 4
+	PortaAviao Nave = 5
+
+	Hidroaviao Nave = 3
 )
 
 type Item struct {
