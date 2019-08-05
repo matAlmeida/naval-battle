@@ -74,12 +74,17 @@ func (c *Campo) Atacar(x int, y int) (bool, *item.Item) {
 		return false, nil
 	}
 
-	if i.Bombardeado || i.Tipo == item.Vazio {
+	if i.Bombardeado {
 		return false, i
 	}
 
 	i.Afundar()
-	return true, i
+	if i.Tipo == item.Vazio {
+		return false, i
+	} else {
+		return true, i
+	}
+
 }
 
 func (c *Campo) checaAdjacentes(x int, y int, i *item.Item) (bool, error) {
