@@ -107,14 +107,101 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 	backup := Novo(10)
 	copier.Copy(&backup, &c)
 	canPlace := true
+	dir := Direita
 
-	if tipo != item.Hidroaviao && tipo != item.Vazio {
-		dir := Direita
+	if len(direcao) > 0 {
+		dir = direcao[0]
+	}
 
-		if len(direcao) > 0 {
-			dir = direcao[0]
+	if tipo == item.Hidroaviao {
+		backup.itens[x][y] = i
+		switch dir {
+		case Cima:
+			podeColocar, _ = backup.checaAdjacentes(x-1, y-1, i)
+			if !podeColocar {
+				canPlace = canPlace && false
+			} else {
+				backup.itens[x-1][y-1] = i
+
+				podeColocar, _ = backup.checaAdjacentes(x-1, y+1, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+				} else {
+					backup.itens[x-1][y+1] = i
+				}
+			}
+			break
+		case Baixo:
+			podeColocar, _ = backup.checaAdjacentes(x+1, y-1, i)
+			if !podeColocar {
+				canPlace = canPlace && false
+			} else {
+				backup.itens[x+1][y-1] = i
+
+				podeColocar, _ = backup.checaAdjacentes(x+1, y+1, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+				} else {
+					backup.itens[x+1][y+1] = i
+				}
+			}
+			break
+		case Esquerda:
+			podeColocar, _ = backup.checaAdjacentes(x-1, y-1, i)
+			if !podeColocar {
+				canPlace = canPlace && false
+			} else {
+				backup.itens[x-1][y-1] = i
+
+				podeColocar, _ = backup.checaAdjacentes(x+1, y-1, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+				} else {
+					backup.itens[x+1][y-1] = i
+				}
+			}
+			break
+		default:
+			podeColocar, _ = backup.checaAdjacentes(x-1, y+1, i)
+			if !podeColocar {
+				canPlace = canPlace && false
+			} else {
+				backup.itens[x-1][y+1] = i
+
+				podeColocar, _ = backup.checaAdjacentes(x+1, y+1, i)
+				if !podeColocar {
+					canPlace = canPlace && false
+				} else {
+					backup.itens[x+1][y+1] = i
+				}
+			}
+			break
 		}
 
+		if canPlace {
+			c.itens[x][y] = i
+			switch dir {
+			case Cima:
+				c.itens[x-1][y-1] = i
+				c.itens[x-1][y+1] = i
+				break
+			case Baixo:
+				c.itens[x+1][y-1] = i
+				c.itens[x+1][y+1] = i
+				break
+			case Esquerda:
+				c.itens[x-1][y-1] = i
+				c.itens[x+1][y-1] = i
+				break
+			default:
+				c.itens[x-1][y+1] = i
+				c.itens[x+1][y+1] = i
+				break
+			}
+		} else {
+			return false
+		}
+	} else if tipo != item.Vazio {
 		for j := 0; j < int(tipo); j++ {
 			switch dir {
 			case Cima:
@@ -124,6 +211,7 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 					break
 				}
 				backup.itens[x-j][y] = i
+				break
 			case Baixo:
 				podeColocar, _ = backup.checaAdjacentes(x+j, y, i)
 				if !podeColocar {
@@ -131,6 +219,7 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 					break
 				}
 				backup.itens[x+j][y] = i
+				break
 			case Esquerda:
 				podeColocar, _ = backup.checaAdjacentes(x, y-j, i)
 				if !podeColocar {
@@ -138,6 +227,7 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 					break
 				}
 				backup.itens[x][y-j] = i
+				break
 			default:
 				podeColocar, _ = backup.checaAdjacentes(x, y+j, i)
 				if !podeColocar {
@@ -145,6 +235,7 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 					break
 				}
 				backup.itens[x][y+j] = i
+				break
 			}
 		}
 
@@ -153,12 +244,16 @@ func (c *Campo) ColocaItem(x int, y int, id string, tipo item.Nave, direcao ...D
 				switch dir {
 				case Cima:
 					c.itens[x-j][y] = i
+					break
 				case Baixo:
 					c.itens[x+j][y] = i
+					break
 				case Esquerda:
 					c.itens[x][y-j] = i
+					break
 				default:
 					c.itens[x][y+j] = i
+					break
 				}
 			}
 		} else {
