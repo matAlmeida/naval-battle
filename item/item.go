@@ -25,6 +25,12 @@ func Novo(id string, tipo Nave) *Item {
 	return i
 }
 
+func (i *Item) Afundar() {
+	if !i.Bombardeado {
+		i.Bombardeado = true
+	}
+}
+
 func (i *Item) String() string {
 	switch i.Tipo {
 	case Vazio:

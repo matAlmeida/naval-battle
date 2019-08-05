@@ -68,6 +68,20 @@ func (c *Campo) LimpaPosicao(x int, y int) {
 	return
 }
 
+func (c *Campo) Atacar(x int, y int) (bool, *item.Item) {
+	i, err := c.GetItem(x, y)
+	if err != nil {
+		return false, nil
+	}
+
+	if i.Bombardeado || i.Tipo == item.Vazio {
+		return false, i
+	}
+
+	i.Afundar()
+	return true, i
+}
+
 func (c *Campo) checaAdjacentes(x int, y int, i *item.Item) (bool, error) {
 	i, err := c.GetItem(x, y)
 	if err != nil {
@@ -86,10 +100,24 @@ func (c *Campo) checaAdjacentes(x int, y int, i *item.Item) (bool, error) {
 	down, _ := c.GetItem(x, y+1)
 	downright, _ := c.GetItem(x+1, y+1)
 
-	if upleft.Tipo == item.Vazio && up.Tipo == item.Vazio && upright.Tipo == item.Vazio && left.Tipo == item.Vazio && right.Tipo == item.Vazio && downleft.Tipo == item.Vazio && down.Tipo == item.Vazio && downright.Tipo == item.Vazio {
+	if upleft.Tipo == item.Vazio &&
+		up.Tipo == item.Vazio &&
+		upright.Tipo == item.Vazio &&
+		left.Tipo == item.Vazio &&
+		right.Tipo == item.Vazio &&
+		downleft.Tipo == item.Vazio &&
+		down.Tipo == item.Vazio &&
+		downright.Tipo == item.Vazio {
 		return true, nil
 	} else {
-		if upleft.Id != i.Id && up.Id != i.Id && upright.Id != i.Id && left.Id != i.Id && right.Id != i.Id && downleft.Id != i.Id && down.Id != i.Id && downright.Id != i.Id {
+		if upleft.Id != i.Id &&
+			up.Id != i.Id &&
+			upright.Id != i.Id &&
+			left.Id != i.Id &&
+			right.Id != i.Id &&
+			downleft.Id != i.Id &&
+			down.Id != i.Id &&
+			downright.Id != i.Id {
 			return false, errors.New("existe alguma nave adjacente")
 		}
 
