@@ -16,15 +16,16 @@ func main() {
 	// g := game.Novo()
 	reader := bufio.NewReader(os.Stdin)
 	p := color.New(color.FgBlack).Add(color.BgGreen).SprintfFunc()
+
 	menu := p(" 0 ") + " Sair\n" +
 		p(" 1 ") + " Atacar\n" +
 		p(" 2 ") + " Receber Ataque\n"
 
-	fmt.Printf("%s\n\n", p("Bem vindo a Batalha Naval!"))
+	fmt.Printf("%s\n", p("Bem vindo a Batalha Naval!"))
 
 	for {
-		fmt.Printf(menu)
-		fmt.Printf(PROMPT)
+		fmt.Printf("\n%s", menu)
+		fmt.Printf("\n%s", PROMPT)
 		userInput, _ := reader.ReadString('\n')
 		userInput = strings.Replace(userInput, "\n", "", 1)
 
