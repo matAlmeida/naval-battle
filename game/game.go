@@ -51,6 +51,30 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 		break
 	case item.Destroyer:
 		j.atkVazioDiagonal(x, y)
+		d, dE := j.CampoInimigo.GetItem(x+1, y)
+		if dE == nil && d.Tipo == item.Destroyer {
+			j.atk(x-1, y, item.Vazio)
+			j.atk(x+2, y, item.Vazio)
+			break
+		}
+		e, eE := j.CampoInimigo.GetItem(x-1, y)
+		if eE == nil && e.Tipo == item.Destroyer {
+			j.atk(x+1, y, item.Vazio)
+			j.atk(x-2, y, item.Vazio)
+			break
+		}
+		c, cE := j.CampoInimigo.GetItem(x, y+1)
+		if cE == nil && c.Tipo == item.Destroyer {
+			j.atk(x, y-1, item.Vazio)
+			j.atk(x, y+2, item.Vazio)
+			break
+		}
+		b, bE := j.CampoInimigo.GetItem(x, y-1)
+		if bE == nil && b.Tipo == item.Destroyer {
+			j.atk(x, y+1, item.Vazio)
+			j.atk(x, y-2, item.Vazio)
+			break
+		}
 		break
 	case item.Cruzador:
 		j.atkVazioDiagonal(x, y)
