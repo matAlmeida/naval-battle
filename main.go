@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/matalmeida/shipbattle/item"
-
-	"github.com/matalmeida/shipbattle/game"
-
 	"github.com/fatih/color"
+
 	"github.com/matalmeida/shipbattle/field"
+	"github.com/matalmeida/shipbattle/game"
+	"github.com/matalmeida/shipbattle/item"
 )
 
 const PROMPT = ">> "
