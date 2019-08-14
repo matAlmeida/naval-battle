@@ -7,15 +7,27 @@ import (
 
 const GAME_SIZE = 10
 
+type Coordenadas struct {
+	x int
+	y int
+}
+
 type Jogo struct {
 	Campo        *field.Campo
 	CampoInimigo *field.Campo
+	PilhaAtaques []Coordenadas
 }
 
 func Novo() *Jogo {
-	g := &Jogo{Campo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
+	j := &Jogo{Campo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
 
-	return g
+	j.criaAtaqueSePilhaVazia()
+
+	return j
+}
+
+func (j *Jogo) criaAtaqueSePilhaVazia() {
+	j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: 0, y: 0})
 }
 
 func (j *Jogo) atk(x int, y int, tipo item.Nave) {
@@ -52,25 +64,25 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 	case item.Destroyer:
 		j.atkVazioDiagonal(x, y)
 		d, dE := j.CampoInimigo.GetItem(x+1, y)
-		if dE == nil && d.Tipo == item.Destroyer {
+		if dE == nil && d.Tipo != item.Vazio {
 			j.atk(x-1, y, item.Vazio)
 			j.atk(x+2, y, item.Vazio)
 			break
 		}
 		e, eE := j.CampoInimigo.GetItem(x-1, y)
-		if eE == nil && e.Tipo == item.Destroyer {
+		if eE == nil && e.Tipo != item.Vazio {
 			j.atk(x+1, y, item.Vazio)
 			j.atk(x-2, y, item.Vazio)
 			break
 		}
 		c, cE := j.CampoInimigo.GetItem(x, y+1)
-		if cE == nil && c.Tipo == item.Destroyer {
+		if cE == nil && c.Tipo != item.Vazio {
 			j.atk(x, y-1, item.Vazio)
 			j.atk(x, y+2, item.Vazio)
 			break
 		}
 		b, bE := j.CampoInimigo.GetItem(x, y-1)
-		if bE == nil && b.Tipo == item.Destroyer {
+		if bE == nil && b.Tipo != item.Vazio {
 			j.atk(x, y+1, item.Vazio)
 			j.atk(x, y-2, item.Vazio)
 			break
@@ -78,6 +90,87 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 		break
 	case item.Cruzador:
 		j.atkVazioDiagonal(x, y)
+		// DIREITA
+		d, dE := j.CampoInimigo.GetItem(x+1, y)
+		d2, d2E := j.CampoInimigo.GetItem(x+2, y)
+		d3, d3E := j.CampoInimigo.GetItem(x+3, y)
+		// ESQUERDA
+		e, eE := j.CampoInimigo.GetItem(x-1, y)
+		e2, e2E := j.CampoInimigo.GetItem(x-2, y)
+		e3, e3E := j.CampoInimigo.GetItem(x-3, y)
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if d2E == nil && d2.Tipo != item.Vazio {
+				if d3E == nil && d3.Tipo != item.Vazio {
+					j.atk(x-1, y, item.Vazio)
+					j.atk(x+4, y, item.Vazio)
+					break
+				}
+				if eE == nil && e.Tipo != item.Vazio {
+					j.atk(x-2, y, item.Vazio)
+					j.atk(x+3, y, item.Vazio)
+					break
+				}
+			}
+			if eE == nil && e.Tipo != item.Vazio {
+				if e2E == nil && e2.Tipo != item.Vazio {
+					j.atk(x-3, y, item.Vazio)
+					j.atk(x+2, y, item.Vazio)
+					break
+				}
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if e2E == nil && e2.Tipo != item.Vazio {
+				if e3E == nil && e3.Tipo != item.Vazio {
+					j.atk(x-4, y, item.Vazio)
+					j.atk(x+1, y, item.Vazio)
+					break
+				}
+			}
+		}
+
+		// BAIXO
+		b, bE := j.CampoInimigo.GetItem(x, y+1)
+		b2, b2E := j.CampoInimigo.GetItem(x, y+2)
+		b3, b3E := j.CampoInimigo.GetItem(x, y+3)
+		// CIMA
+		c, cE := j.CampoInimigo.GetItem(x, y-1)
+		c2, c2E := j.CampoInimigo.GetItem(x, y-2)
+		c3, c3E := j.CampoInimigo.GetItem(x, y-3)
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if b2E == nil && b2.Tipo != item.Vazio {
+				if b3E == nil && b3.Tipo != item.Vazio {
+					j.atk(x, y-1, item.Vazio)
+					j.atk(x, y+4, item.Vazio)
+					break
+				}
+				if cE == nil && c.Tipo != item.Vazio {
+					j.atk(x, y-2, item.Vazio)
+					j.atk(x, y+3, item.Vazio)
+					break
+				}
+			}
+			if cE == nil && c.Tipo != item.Vazio {
+				if c2E == nil && c2.Tipo != item.Vazio {
+					j.atk(x, y-3, item.Vazio)
+					j.atk(x, y+2, item.Vazio)
+					break
+				}
+			}
+		}
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if c2E == nil && c2.Tipo != item.Vazio {
+				if c3E == nil && c3.Tipo != item.Vazio {
+					j.atk(x, y-4, item.Vazio)
+					j.atk(x, y+1, item.Vazio)
+					break
+				}
+			}
+		}
 		break
 	case item.PortaAviao:
 		j.atkVazioDiagonal(x, y)
