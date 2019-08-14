@@ -174,6 +174,118 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 		break
 	case item.PortaAviao:
 		j.atkVazioDiagonal(x, y)
+		// DIREITA
+		d, dE := j.CampoInimigo.GetItem(x+1, y)
+		d2, d2E := j.CampoInimigo.GetItem(x+2, y)
+		d3, d3E := j.CampoInimigo.GetItem(x+3, y)
+		d4, d4E := j.CampoInimigo.GetItem(x+4, y)
+		// ESQUERDA
+		e, eE := j.CampoInimigo.GetItem(x-1, y)
+		e2, e2E := j.CampoInimigo.GetItem(x-2, y)
+		e3, e3E := j.CampoInimigo.GetItem(x-3, y)
+		e4, e4E := j.CampoInimigo.GetItem(x-4, y)
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if d2E == nil && d2.Tipo != item.Vazio {
+				if d3E == nil && d3.Tipo != item.Vazio {
+					if d4E == nil && d4.Tipo != item.Vazio {
+						j.atk(x-1, y, item.Vazio)
+						j.atk(x+5, y, item.Vazio)
+						break
+					}
+					if eE == nil && e.Tipo != item.Vazio {
+						j.atk(x-2, y, item.Vazio)
+						j.atk(x+4, y, item.Vazio)
+						break
+					}
+				}
+				if eE == nil && e.Tipo != item.Vazio {
+					if e2E == nil && e2.Tipo != item.Vazio {
+						j.atk(x-3, y, item.Vazio)
+						j.atk(x+3, y, item.Vazio)
+						break
+					}
+				}
+			}
+			if eE == nil && e.Tipo != item.Vazio {
+				if e2E == nil && e2.Tipo != item.Vazio {
+					if e3E == nil && e3.Tipo != item.Vazio {
+						j.atk(x-4, y, item.Vazio)
+						j.atk(x+2, y, item.Vazio)
+						break
+					}
+				}
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if e2E == nil && e2.Tipo != item.Vazio {
+				if e3E == nil && e3.Tipo != item.Vazio {
+					if e4E == nil && e4.Tipo != item.Vazio {
+						j.atk(x-5, y, item.Vazio)
+						j.atk(x+1, y, item.Vazio)
+						break
+					}
+				}
+			}
+		}
+
+		// BAIXO
+		b, bE := j.CampoInimigo.GetItem(x, y+1)
+		b2, b2E := j.CampoInimigo.GetItem(x, y+2)
+		b3, b3E := j.CampoInimigo.GetItem(x, y+3)
+		b4, b4E := j.CampoInimigo.GetItem(x, y+4)
+		// CIMA
+		c, cE := j.CampoInimigo.GetItem(x, y-1)
+		c2, c2E := j.CampoInimigo.GetItem(x, y-2)
+		c3, c3E := j.CampoInimigo.GetItem(x, y-3)
+		c4, c4E := j.CampoInimigo.GetItem(x, y-4)
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if b2E == nil && b2.Tipo != item.Vazio {
+				if b3E == nil && b3.Tipo != item.Vazio {
+					if b4E == nil && b4.Tipo != item.Vazio {
+						j.atk(x, y-1, item.Vazio)
+						j.atk(x, y+5, item.Vazio)
+						break
+					}
+					if cE == nil && c.Tipo != item.Vazio {
+						j.atk(x, y-2, item.Vazio)
+						j.atk(x, y+4, item.Vazio)
+						break
+					}
+				}
+				if cE == nil && c.Tipo != item.Vazio {
+					if c2E == nil && c2.Tipo != item.Vazio {
+						j.atk(x, y-3, item.Vazio)
+						j.atk(x, y+3, item.Vazio)
+						break
+					}
+				}
+			}
+			if cE == nil && c.Tipo != item.Vazio {
+				if c2E == nil && c2.Tipo != item.Vazio {
+					if c2E == nil && c2.Tipo != item.Vazio {
+						j.atk(x, y-4, item.Vazio)
+						j.atk(x, y+2, item.Vazio)
+						break
+					}
+				}
+			}
+		}
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if c2E == nil && c2.Tipo != item.Vazio {
+				if c3E == nil && c3.Tipo != item.Vazio {
+					if c4E == nil && c4.Tipo != item.Vazio {
+						j.atk(x, y-5, item.Vazio)
+						j.atk(x, y+1, item.Vazio)
+						break
+					}
+				}
+			}
+		}
+
 		break
 	case item.Hidroaviao:
 		j.atkVazioCruz(x, y)
