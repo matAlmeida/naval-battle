@@ -31,6 +31,10 @@ func (j *Jogo) criaAtaqueSePilhaVazia() {
 }
 
 func (j *Jogo) atk(x int, y int, tipo item.Nave) {
+	i, iE := j.CampoInimigo.GetItem(x, y)
+	if iE == nil && i.Id == "enemy" {
+		return
+	}
 	j.CampoInimigo.ColocaItem(x, y, "enemy", tipo)
 	j.CampoInimigo.Atacar(x, y)
 }
@@ -289,6 +293,104 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 		break
 	case item.Hidroaviao:
 		j.atkVazioCruz(x, y)
+		// CIMA
+		c, cE := j.CampoInimigo.GetItem(x, y-2)
+		cEsq, cEsqE := j.CampoInimigo.GetItem(x-1, y-1)
+		cDir, cDirE := j.CampoInimigo.GetItem(x+1, y-1)
+		// BAIXO
+		b, bE := j.CampoInimigo.GetItem(x, y+2)
+		bEsq, bEsqE := j.CampoInimigo.GetItem(x-1, y+1)
+		bDir, bDirE := j.CampoInimigo.GetItem(x+1, y+1)
+		// LATERAL
+		d, dE := j.CampoInimigo.GetItem(x+2, y)
+		e, eE := j.CampoInimigo.GetItem(x-2, y)
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x, y-2)
+				j.atkVazioDiagonal(x-1, y-1)
+				break
+			}
+			if cDirE == nil && cDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x, y-2)
+				j.atkVazioDiagonal(x+1, y-1)
+				break
+			}
+		}
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if bEsqE == nil && bEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x, y+2)
+				j.atkVazioDiagonal(x-1, y+1)
+				break
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x, y+2)
+				j.atkVazioDiagonal(x+1, y+1)
+				break
+			}
+		}
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if cDirE == nil && cDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x+2, y)
+				j.atkVazioDiagonal(x+1, y-1)
+				break
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x+2, y)
+				j.atkVazioDiagonal(x+1, y+1)
+				break
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x-2, y)
+				j.atkVazioDiagonal(x-1, y-1)
+				break
+			}
+			if bEsqE == nil && bEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x-2, y)
+				j.atkVazioDiagonal(x-1, y+1)
+				break
+			}
+		}
+
+		if cDirE == nil && cDir.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x+1, y-1)
+				j.atkVazioDiagonal(x-1, y-1)
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x+1, y-1)
+				j.atkVazioDiagonal(x+1, y+1)
+			}
+		}
+
+		if bEsqE == nil && bEsq.Tipo != item.Vazio {
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x-1, y+1)
+				j.atkVazioDiagonal(x+1, y+1)
+			}
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y)
+				j.atkVazioDiagonal(x-1, y+1)
+				j.atkVazioDiagonal(x-1, y-1)
+			}
+		}
+
 		break
 	}
 
