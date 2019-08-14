@@ -53,12 +53,42 @@ func (j *Jogo) atkVazioDiagonal(x int, y int) {
 	j.atk(x-1, y-1, item.Vazio)
 }
 
+func (j *Jogo) sugereAtaque(x int, y int, tipo item.Nave) {
+	switch tipo {
+	case item.Destroyer:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		break
+	case item.Cruzador:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		break
+	case item.PortaAviao:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		break
+	case item.Hidroaviao:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y - 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y - 1})
+		break
+	}
+}
+
 func (j *Jogo) checaSeGanhou() bool {
 	return false
 }
 
 func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 	j.atk(x, y, tipo)
+	j.sugereAtaque(x, y, tipo)
 
 	switch tipo {
 	case item.Submarino:
