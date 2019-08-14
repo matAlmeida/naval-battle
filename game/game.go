@@ -21,13 +21,17 @@ type Jogo struct {
 func Novo() *Jogo {
 	j := &Jogo{Campo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
 
-	j.criaAtaqueSePilhaVazia()
+	j.iniciaPilhaDeAtaque()
 
 	return j
 }
 
-func (j *Jogo) criaAtaqueSePilhaVazia() {
-	j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: 0, y: 0})
+func (j *Jogo) iniciaPilhaDeAtaque() {
+	for x := 9; x >= 0; x-- {
+		for y := 9; y >= 0; y-- {
+			j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y})
+		}
+	}
 }
 
 func (j *Jogo) atk(x int, y int, tipo item.Nave) {
