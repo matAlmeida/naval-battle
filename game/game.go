@@ -27,14 +27,16 @@ func Novo() *Jogo {
 }
 
 func (j *Jogo) Atacar() (int, int) {
+	nextAtk := j.PilhaAtaques[len(j.PilhaAtaques)-1]
+	j.PilhaAtaques = j.PilhaAtaques[:len(j.PilhaAtaques)-1]
 	for {
-		nextAtk := j.PilhaAtaques[len(j.PilhaAtaques)-1]
-		j.PilhaAtaques = j.PilhaAtaques[:len(j.PilhaAtaques)-1]
 		alvo, alvoE := j.CampoInimigo.GetItem(nextAtk.x, nextAtk.y)
-
+		// fmt.Printf("cood: %#v - alvo: %#v\n", nextAtk, alvo)
 		if alvoE == nil && !alvo.Bombardeado {
 			return nextAtk.x, nextAtk.y
 		}
+		nextAtk = j.PilhaAtaques[len(j.PilhaAtaques)-1]
+		j.PilhaAtaques = j.PilhaAtaques[:len(j.PilhaAtaques)-1]
 	}
 }
 
