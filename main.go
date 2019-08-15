@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -33,6 +34,7 @@ func readString() string {
 
 func main() {
 	g := game.Novo()
+	g = nossoCampo(g)
 	v := color.New(color.FgBlack).Add(color.BgGreen).SprintfFunc()
 	r := color.New(color.FgBlack).Add(color.BgRed).SprintfFunc()
 
@@ -50,6 +52,13 @@ func main() {
 	fmt.Printf("%s\n", v("Bem vindo a Batalha Naval!"))
 
 	for {
+		c := exec.Command("clear")
+		c.Stdout = os.Stdout
+		c.Run()
+		fmt.Printf("Nosso Campo\n")
+		fmt.Printf("%s\n", g.Campo.String())
+		fmt.Printf("Campo Inimigo\n")
+		fmt.Printf("%s\n", g.CampoInimigo.String())
 		fmt.Printf("\n%s", menu)
 		fmt.Printf("\n%s", PROMPT)
 		userInput := readString()
@@ -61,18 +70,19 @@ func main() {
 			break
 		case "1":
 			x, y := g.Atacar()
+
 			fmt.Printf("Atacando (%d, %d)\n", x, y)
+
 			fmt.Printf("\nQual foi o resultado do ataque? \n")
 			fmt.Printf("%s\n", atkMenu)
 			fmt.Printf(PROMPT)
+
 			atkResponse := readString()
 			tipoNave, _ := strconv.ParseInt(atkResponse, 10, 32)
-			ganhou := g.RetornoDeAtaque(1, 1, item.Nave(tipoNave))
+			ganhou := g.RetornoDeAtaque(x, y, item.Nave(tipoNave))
 			if ganhou {
 				fmt.Printf("%s\n", v("Ganhei o Jogo!"))
 				os.Exit(0)
-			} else {
-				fmt.Printf("%s\n", r("Mais alguns ataques para ganhar!"))
 			}
 			break
 		case "2":
@@ -84,10 +94,32 @@ func main() {
 			y, _ := strconv.ParseInt(yS, 10, 32)
 			naveAtacada := g.SerAtacado(int(x), int(y))
 
-			fmt.Printf("Atingiu %s.", naveAtacada.String())
-			break
-		default:
+			fmt.Printf("Atingiu %s.\n", naveAtacada.String())
 			break
 		}
 	}
+}
+
+func nossoCampo(j *game.Jogo) *game.Jogo {
+	// PORTA AVIÃO
+	j.Campo.ColocaItem(1, 9, "p1", item.PortaAviao, field.Baixo)
+	// SUBMARINO
+	j.Campo.ColocaItem(3, 0, "s1", item.Submarino, field.Baixo)
+	j.Campo.ColocaItem(7, 7, "s2", item.Submarino, field.Baixo)
+	j.Campo.ColocaItem(7, 9, "s3", item.Submarino, field.Baixo)
+	j.Campo.ColocaItem(9, 9, "s4", item.Submarino, field.Baixo)
+	// DESTROYER
+	j.Campo.ColocaItem(3, 2, "d1", item.Destroyer, field.Baixo)
+	j.Campo.ColocaItem(3, 4, "d2", item.Destroyer, field.Baixo)
+	j.Campo.ColocaItem(9, 6, "d3", item.Destroyer, field.Direita)
+	// CRUZADOR
+	j.Campo.ColocaItem(5, 0, "c1", item.Cruzador, field.Baixo)
+	j.Campo.ColocaItem(6, 2, "c2", item.Cruzador, field.Direita)
+	// HIDRO AVIÃO
+	j.Campo.ColocaItem(0, 2, "h1", item.Hidroaviao, field.Baixo)
+	j.Campo.ColocaItem(0, 6, "h2", item.Hidroaviao, field.Baixo)
+	j.Campo.ColocaItem(4, 6, "h3", item.Hidroaviao, field.Direita)
+	j.Campo.ColocaItem(8, 3, "h4", item.Hidroaviao, field.Baixo)
+
+	return j
 }
