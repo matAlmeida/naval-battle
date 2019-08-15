@@ -26,6 +26,27 @@ func Novo() *Jogo {
 	return j
 }
 
+func (j *Jogo) Atacar() (int, int) {
+	for {
+		nextAtk := j.PilhaAtaques[len(j.PilhaAtaques)-1]
+		j.PilhaAtaques = j.PilhaAtaques[:len(j.PilhaAtaques)-1]
+		alvo, alvoE := j.CampoInimigo.GetItem(nextAtk.x, nextAtk.y)
+
+		if alvoE == nil && !alvo.Bombardeado {
+			return nextAtk.x, nextAtk.y
+		}
+	}
+}
+
+func (j *Jogo) SerAtacado(x int, y int) *item.Item {
+	successo, alvo := j.Campo.Atacar(x, y)
+	if successo {
+		return alvo
+	}
+
+	return alvo
+}
+
 func (j *Jogo) iniciaPilhaDeAtaque() {
 	for x := 9; x >= 0; x-- {
 		for y := 9; y >= 0; y-- {
