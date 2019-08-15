@@ -60,7 +60,8 @@ func main() {
 			os.Exit(0)
 			break
 		case "1":
-			fmt.Printf("Atacando (%d, %d)\n", 1, 1)
+			x, y := g.Atacar()
+			fmt.Printf("Atacando (%d, %d)\n", x, y)
 			fmt.Printf("\nQual foi o resultado do ataque? \n")
 			fmt.Printf("%s\n", atkMenu)
 			fmt.Printf(PROMPT)
@@ -73,6 +74,17 @@ func main() {
 			} else {
 				fmt.Printf("%s\n", r("Mais alguns ataques para ganhar!"))
 			}
+			break
+		case "2":
+			fmt.Printf("Digite as coordenadas: ")
+			atkResponse := readString()
+			xS := strings.Split(atkResponse, ",")[0]
+			x, _ := strconv.ParseInt(xS, 10, 32)
+			yS := strings.Split(atkResponse, ",")[1]
+			y, _ := strconv.ParseInt(yS, 10, 32)
+			naveAtacada := g.SerAtacado(int(x), int(y))
+
+			fmt.Printf("Atingiu %s.", naveAtacada.String())
 			break
 		default:
 			break
