@@ -71,7 +71,7 @@ func main() {
 		case "1":
 			x, y := g.Atacar()
 
-			fmt.Printf("Atacando (%d, %d)\n", x, y)
+			fmt.Printf("Atacando (%c, %d)\n", 'a'+x, y+1)
 
 			fmt.Printf("\nQual foi o resultado do ataque? \n")
 			fmt.Printf("%s\n", atkMenu)
@@ -86,13 +86,13 @@ func main() {
 			}
 			break
 		case "2":
-			fmt.Printf("Digite as coordenadas: ")
+			fmt.Printf("Digite as coordenadas([a-z],[1-10]): ")
 			atkResponse := readString()
 			xS := strings.Split(atkResponse, ",")[0]
-			x, _ := strconv.ParseInt(xS, 10, 32)
+			x := xS[0] - 'a'
 			yS := strings.Split(atkResponse, ",")[1]
 			y, _ := strconv.ParseInt(yS, 10, 32)
-			naveAtacada := g.SerAtacado(int(x), int(y))
+			naveAtacada := g.SerAtacado(int(x), int(y-1))
 
 			fmt.Printf("Atingiu %s.\n", naveAtacada.String())
 			break
