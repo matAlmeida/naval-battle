@@ -94,7 +94,8 @@ func main() {
 			y, _ := strconv.ParseInt(yS, 10, 32)
 			naveAtacada := g.SerAtacado(int(x), int(y-1))
 
-			fmt.Printf("Atingiu %s.\n", naveAtacada.String())
+			fmt.Printf("Atingiu %s.\n", r(" "+naveAtacada.String()+" "))
+			readString()
 			break
 		}
 	}
