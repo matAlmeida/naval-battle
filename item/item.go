@@ -32,19 +32,26 @@ func (i *Item) Afundar() {
 }
 
 func (i *Item) String() string {
+	if i.Id != "enemy" && i.Bombardeado {
+		return "X"
+	}
+
 	switch i.Tipo {
 	case Vazio:
-		return "s0"
+		if i.Bombardeado {
+			return "A"
+		}
+		return "0"
 	case PortaAviao:
-		return "s1"
+		return "P"
 	case Cruzador:
-		return "s2"
+		return "C"
 	case Destroyer:
-		return "s3"
+		return "D"
 	case Submarino:
-		return "s4"
+		return "S"
 	case Hidroaviao:
-		return "s5"
+		return "H"
 	default:
 		return "unk"
 	}
