@@ -3,6 +3,7 @@ package field
 import (
 	"errors"
 
+	"github.com/fatih/color"
 	"github.com/matalmeida/shipbattle/item"
 )
 
@@ -37,10 +38,26 @@ func Novo(tamanho int) *Campo {
 
 func (c *Campo) String() string {
 	ret := ""
+	v := color.New(color.FgBlack).Add(color.BgGreen).SprintfFunc()
+	b := color.New(color.FgBlack).Add(color.BgHiWhite).SprintFunc()
+	a := color.New(color.FgBlack).Add(color.BgCyan).SprintFunc()
+	r := color.New(color.FgBlack).Add(color.BgRed).SprintfFunc()
 
 	for i := 0; i < c.Tamanho; i++ {
 		for j := 0; j < c.Tamanho; j++ {
-			ret += c.itens[i][j].String() + " "
+			if c.itens[i][j].String() == "B" {
+				ret += b(" " + c.itens[i][j].String() + " ")
+				continue
+			}
+			if c.itens[i][j].String() == "A" {
+				ret += a(" " + c.itens[i][j].String() + " ")
+				continue
+			}
+			if c.itens[i][j].Bombardeado {
+				ret += r(" " + c.itens[i][j].String() + " ")
+				continue
+			}
+			ret += v(" " + c.itens[i][j].String() + " ")
 		}
 		ret += "\n"
 	}

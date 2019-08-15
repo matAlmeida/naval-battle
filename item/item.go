@@ -32,16 +32,12 @@ func (i *Item) Afundar() {
 }
 
 func (i *Item) String() string {
-	if i.Id != "enemy" && i.Bombardeado {
-		return "X"
-	}
-
 	switch i.Tipo {
 	case Vazio:
 		if i.Bombardeado {
 			return "A"
 		}
-		return "0"
+		return "B"
 	case PortaAviao:
 		return "P"
 	case Cruzador:
