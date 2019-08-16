@@ -1,0 +1,139 @@
+#!/bin/bash
+# Created by Matheus Almeida [https://github.com/matalmeida]
+
+usage="\n$(basename "$0") [-h | --help] <GO_FILE> [TARGET_SYSTEM]
+\n\n
+where:\n
+\t	-h, --help	show this help text\n
+\t	-a, --all	will build the file for Linux, MacOS and Windows\n
+inputs:\n
+\t	<GO_FILE>	path to the the go file to be built"
+
+if [ "$1" == "-h" ]; then
+  echo -e $usage
+  exit 0
+fi
+
+if [ "$1" == "--help" ]; then
+  echo -e $usage
+  exit 0
+fi
+
+BUILD_FOR_ALL="false"
+if [ "$1" == "-a" ]; then
+  BUILD_FOR_ALL="true"
+fi
+
+if [ "$1" == "--all" ]; then
+  BUILD_FOR_ALL="true"
+fi
+
+if [ "$2" == "-a" ]; then
+  BUILD_FOR_ALL="true"
+fi
+
+if [ "$2" == "--all" ]; then
+  BUILD_FOR_ALL="true"
+fi
+
+# Polyfill for MacOsX
+realpath() {
+  [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
+build_directory="dist"
+directory=$(temp=$( realpath "$build_directory"  ) && dirname "$temp")
+GOBIN=$directory/$build_directory
+
+if [ "$BUILD_FOR_ALL" == "false" ]; then
+  echo "Starting Build..."
+  GOARCH=`uname -m`
+  case "$GOARCH" in
+    i?86) GOARCH="386" ;;
+    x86_64) GOARCH="amd64" ;;
+    arm*) GOARCH="arm" ;;
+  esac
+
+  GOOS="$OSTYPE"
+  case "$OSTYPE" in
+    darwin*)  GOOS="darwin" ;;
+    linux*)   GOOS="linux" ;;
+    bsd*)     GOOS="freebsd" ;;
+    msys*)    GOOS="windows" ;;
+    *)        GOOS="unknown: $OSTYPE" ;;
+  esac
+
+  if [ -d $GOBIN ]; then
+    rm -rf $GOBIN
+  fi
+  mkdir $GOBIN
+
+  echo "Building Battleship..."
+  env GOOS=$GOOS GOARCH=$GOARCH go build main.go
+  mkdir $GOBIN/$OSTYPE
+  mv main $GOBIN/$OSTYPE
+  echo "Compressing Files..."
+  cd $build_directory
+  zip -r -q $OSTYPE.zip $OSTYPE
+  cd ..
+  echo "Build Finished."
+  exit 0
+fi
+
+build_server_client() {
+  GOOS=$1
+  GOARCH=$2
+  GOBIN=$3
+
+  extention=""
+  if [[ $GOOS == *"windows"* ]]; then
+    extention=".exe"
+  fi
+
+  echo -e "\t \t Building Battleship..."
+  env GOOS=$GOOS GOARCH=$GOARCH go build main.go
+  TARGET_FOLDER=$GOBIN/$GOOS/$GOARCH
+  mkdir -p $TARGET_FOLDER
+  mv main$extention $TARGET_FOLDER
+}
+
+# Build for 32 and 64 bits
+build_86_64() {
+  GOOS="$1"
+  GOBIN="$2"
+
+  echo -e "\t ix86.."
+  GOARCH="386"
+  build_server_client $GOOS $GOARCH $GOBIN
+
+  echo -e "\t x86_64.."
+  GOARCH="amd64"
+  build_server_client $GOOS $GOARCH $GOBIN
+
+  echo -e "\t Compressing Files..."
+  cd $build_directory
+  zip -r -q $GOOS.zip $GOOS
+  cd ..
+}
+
+if [ "$BUILD_FOR_ALL" == "true" ]; then
+  if [ -d $GOBIN ]; then
+    rm -rf $GOBIN
+  fi
+  mkdir $GOBIN
+
+  echo "Build for Windows..."
+  GOOS="windows"
+  build_86_64 $GOOS $GOBIN
+
+  echo "Build for Linux..."
+  GOOS="linux"
+  build_86_64 $GOOS $GOBIN
+
+  echo "Build for MacOS..."
+  GOOS="darwin"
+  build_86_64 $GOOS $GOBIN
+fi
+
+echo "Build Finished."
+exit 0
