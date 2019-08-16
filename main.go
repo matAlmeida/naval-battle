@@ -81,7 +81,7 @@ func main() {
 			tipoNave, _ := strconv.ParseInt(atkResponse, 10, 32)
 			ganhou := g.RetornoDeAtaque(x, y, item.Nave(tipoNave))
 			if ganhou {
-				fmt.Printf("%s\n", v("Ganhei o Jogo!"))
+				fmt.Printf("%s\n", v(" Ganhei o Jogo! 🤣 Achei Fácil! "))
 				os.Exit(0)
 			}
 			break
@@ -93,7 +93,11 @@ func main() {
 			yS := strings.Split(atkResponse, ",")[1]
 			y, _ := strconv.ParseInt(yS, 10, 32)
 			naveAtacada := g.SerAtacado(int(x), int(y-1))
-
+			perdeu := g.RetornoDeReceberAtaque(int(x), int(y-1), naveAtacada.Tipo)
+			if perdeu {
+				fmt.Printf("%s\n", r(" Perdi o Jogo! 😭 "))
+				os.Exit(0)
+			}
 			fmt.Printf("Atingiu %s.\n", r(" "+naveAtacada.String()+" "))
 			readString()
 			break

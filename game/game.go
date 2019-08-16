@@ -1,6 +1,9 @@
 package game
 
 import (
+	"fmt"
+
+	"github.com/fatih/color"
 	"github.com/matalmeida/shipbattle/field"
 	"github.com/matalmeida/shipbattle/item"
 )
@@ -14,21 +17,30 @@ type Coordenadas struct {
 
 type Jogo struct {
 	Campo        *field.Campo
+	CopiaCampo   *field.Campo
 	CampoInimigo *field.Campo
 	PilhaAtaques []Coordenadas
 	NavesInimigo map[item.Nave]int
+	NossasNaves  map[item.Nave]int
 }
 
 func Novo() *Jogo {
-	j := &Jogo{Campo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
+	j := &Jogo{Campo: field.Novo(GAME_SIZE), CopiaCampo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
 
 	j.NavesInimigo = make(map[item.Nave]int)
+	j.NossasNaves = make(map[item.Nave]int)
 
 	j.NavesInimigo[item.Hidroaviao] = 4
 	j.NavesInimigo[item.Submarino] = 4
 	j.NavesInimigo[item.Destroyer] = 3
 	j.NavesInimigo[item.Cruzador] = 2
 	j.NavesInimigo[item.PortaAviao] = 1
+
+	j.NossasNaves[item.Hidroaviao] = 4
+	j.NossasNaves[item.Submarino] = 4
+	j.NossasNaves[item.Destroyer] = 3
+	j.NossasNaves[item.Cruzador] = 2
+	j.NossasNaves[item.PortaAviao] = 1
 
 	j.iniciaPilhaDeAtaque()
 
@@ -66,8 +78,18 @@ func (j *Jogo) iniciaPilhaDeAtaque() {
 	}
 }
 
-func (j *Jogo) atk(x int, y int, tipo item.Nave) {
+func (j *Jogo) atk(x int, y int, tipo item.Nave, o ...string) {
 	i, iE := j.CampoInimigo.GetItem(x, y)
+	if len(o) != 0 {
+		i, iE = j.CopiaCampo.GetItem(x, y)
+		if iE == nil && i.Id == "enemy" {
+			return
+		}
+		j.CopiaCampo.ColocaItem(x, y, "enemy", tipo)
+		j.CopiaCampo.Atacar(x, y)
+		return
+	}
+
 	if iE == nil && i.Id == "enemy" {
 		return
 	}
@@ -75,14 +97,28 @@ func (j *Jogo) atk(x int, y int, tipo item.Nave) {
 	j.CampoInimigo.Atacar(x, y)
 }
 
-func (j *Jogo) atkVazioCruz(x int, y int) {
+func (j *Jogo) atkVazioCruz(x int, y int, o ...string) {
+	if len(o) != 0 {
+		j.atk(x+1, y, item.Vazio, o[0])
+		j.atk(x-1, y, item.Vazio, o[0])
+		j.atk(x, y+1, item.Vazio, o[0])
+		j.atk(x, y-1, item.Vazio, o[0])
+		return
+	}
 	j.atk(x+1, y, item.Vazio)
 	j.atk(x-1, y, item.Vazio)
 	j.atk(x, y+1, item.Vazio)
 	j.atk(x, y-1, item.Vazio)
 }
 
-func (j *Jogo) atkVazioDiagonal(x int, y int) {
+func (j *Jogo) atkVazioDiagonal(x int, y int, o ...string) {
+	if len(o) != 0 {
+		j.atk(x+1, y+1, item.Vazio, o[0])
+		j.atk(x+1, y-1, item.Vazio, o[0])
+		j.atk(x-1, y+1, item.Vazio, o[0])
+		j.atk(x-1, y-1, item.Vazio, o[0])
+		return
+	}
 	j.atk(x+1, y+1, item.Vazio)
 	j.atk(x+1, y-1, item.Vazio)
 	j.atk(x-1, y+1, item.Vazio)
@@ -130,6 +166,16 @@ func (j *Jogo) checaSeGanhou() bool {
 		}
 	}
 	return ganhou
+}
+
+func (j *Jogo) checaSePerdeu() bool {
+	perdeu := true
+	for _, qntd := range j.NossasNaves {
+		if qntd != 0 {
+			perdeu = perdeu && false
+		}
+	}
+	return perdeu
 }
 
 func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
@@ -567,4 +613,419 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 	}
 
 	return j.checaSeGanhou()
+}
+
+func (j *Jogo) RetornoDeReceberAtaque(x int, y int, tipo item.Nave) bool {
+	j.atk(x, y, tipo, "sup")
+	r := color.New(color.FgBlack).Add(color.BgRed).SprintfFunc()
+
+	switch tipo {
+	case item.Submarino:
+		j.atkVazioDiagonal(x, y, "sup")
+		j.atkVazioCruz(x, y, "sup")
+		j.NossasNaves[item.Submarino]--
+		fmt.Printf("\nDestruiram um %s.\n", r("Submarino"))
+		break
+	case item.Destroyer:
+		j.atkVazioDiagonal(x, y, "sup")
+		d, dE := j.CopiaCampo.GetItem(x+1, y)
+		if dE == nil && d.Tipo != item.Vazio {
+			j.atk(x-1, y, item.Vazio, "sup")
+			j.atk(x+2, y, item.Vazio, "sup")
+			j.NossasNaves[item.Destroyer]--
+			fmt.Printf("\nDestruiram um %s.\n", r("Destroyer"))
+			break
+		}
+		e, eE := j.CopiaCampo.GetItem(x-1, y)
+		if eE == nil && e.Tipo != item.Vazio {
+			j.atk(x+1, y, item.Vazio, "sup")
+			j.atk(x-2, y, item.Vazio, "sup")
+			j.NossasNaves[item.Destroyer]--
+			fmt.Printf("\nDestruiram um %s.\n", r("Destroyer"))
+			break
+		}
+		c, cE := j.CopiaCampo.GetItem(x, y+1)
+		if cE == nil && c.Tipo != item.Vazio {
+			j.atk(x, y-1, item.Vazio, "sup")
+			j.atk(x, y+2, item.Vazio, "sup")
+			j.NossasNaves[item.Destroyer]--
+			fmt.Printf("\nDestruiram um %s.\n", r("Destroyer"))
+			break
+		}
+		b, bE := j.CopiaCampo.GetItem(x, y-1)
+		if bE == nil && b.Tipo != item.Vazio {
+			j.atk(x, y+1, item.Vazio, "sup")
+			j.atk(x, y-2, item.Vazio, "sup")
+			j.NossasNaves[item.Destroyer]--
+			fmt.Printf("\nDestruiram um %s.\n", r("Destroyer"))
+			break
+		}
+		break
+	case item.Cruzador:
+		j.atkVazioDiagonal(x, y, "sup")
+		// DIREITA
+		d, dE := j.CopiaCampo.GetItem(x+1, y)
+		d2, d2E := j.CopiaCampo.GetItem(x+2, y)
+		d3, d3E := j.CopiaCampo.GetItem(x+3, y)
+		// ESQUERDA
+		e, eE := j.CopiaCampo.GetItem(x-1, y)
+		e2, e2E := j.CopiaCampo.GetItem(x-2, y)
+		e3, e3E := j.CopiaCampo.GetItem(x-3, y)
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if d2E == nil && d2.Tipo != item.Vazio {
+				if d3E == nil && d3.Tipo != item.Vazio {
+					j.atk(x-1, y, item.Vazio)
+					j.atk(x+4, y, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+				if eE == nil && e.Tipo != item.Vazio {
+					j.atk(x-2, y, item.Vazio)
+					j.atk(x+3, y, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+			if eE == nil && e.Tipo != item.Vazio {
+				if e2E == nil && e2.Tipo != item.Vazio {
+					j.atk(x-3, y, item.Vazio)
+					j.atk(x+2, y, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if e2E == nil && e2.Tipo != item.Vazio {
+				if e3E == nil && e3.Tipo != item.Vazio {
+					j.atk(x-4, y, item.Vazio)
+					j.atk(x+1, y, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+		}
+
+		// BAIXO
+		b, bE := j.CopiaCampo.GetItem(x, y+1)
+		b2, b2E := j.CopiaCampo.GetItem(x, y+2)
+		b3, b3E := j.CopiaCampo.GetItem(x, y+3)
+		// CIMA
+		c, cE := j.CopiaCampo.GetItem(x, y-1)
+		c2, c2E := j.CopiaCampo.GetItem(x, y-2)
+		c3, c3E := j.CopiaCampo.GetItem(x, y-3)
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if b2E == nil && b2.Tipo != item.Vazio {
+				if b3E == nil && b3.Tipo != item.Vazio {
+					j.atk(x, y-1, item.Vazio)
+					j.atk(x, y+4, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+				if cE == nil && c.Tipo != item.Vazio {
+					j.atk(x, y-2, item.Vazio)
+					j.atk(x, y+3, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+			if cE == nil && c.Tipo != item.Vazio {
+				if c2E == nil && c2.Tipo != item.Vazio {
+					j.atk(x, y-3, item.Vazio)
+					j.atk(x, y+2, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+		}
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if c2E == nil && c2.Tipo != item.Vazio {
+				if c3E == nil && c3.Tipo != item.Vazio {
+					j.atk(x, y-4, item.Vazio)
+					j.atk(x, y+1, item.Vazio)
+					j.NossasNaves[item.Cruzador]--
+					fmt.Printf("\nDestruiram um %s.\n", r("Cruzador"))
+					break
+				}
+			}
+		}
+		break
+	case item.PortaAviao:
+		j.atkVazioDiagonal(x, y, "sup")
+		// DIREITA
+		d, dE := j.CopiaCampo.GetItem(x+1, y)
+		d2, d2E := j.CopiaCampo.GetItem(x+2, y)
+		d3, d3E := j.CopiaCampo.GetItem(x+3, y)
+		d4, d4E := j.CopiaCampo.GetItem(x+4, y)
+		// ESQUERDA
+		e, eE := j.CopiaCampo.GetItem(x-1, y)
+		e2, e2E := j.CopiaCampo.GetItem(x-2, y)
+		e3, e3E := j.CopiaCampo.GetItem(x-3, y)
+		e4, e4E := j.CopiaCampo.GetItem(x-4, y)
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if d2E == nil && d2.Tipo != item.Vazio {
+				if d3E == nil && d3.Tipo != item.Vazio {
+					if d4E == nil && d4.Tipo != item.Vazio {
+						j.atk(x-1, y, item.Vazio)
+						j.atk(x+5, y, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+					if eE == nil && e.Tipo != item.Vazio {
+						j.atk(x-2, y, item.Vazio)
+						j.atk(x+4, y, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+				if eE == nil && e.Tipo != item.Vazio {
+					if e2E == nil && e2.Tipo != item.Vazio {
+						j.atk(x-3, y, item.Vazio)
+						j.atk(x+3, y, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+			if eE == nil && e.Tipo != item.Vazio {
+				if e2E == nil && e2.Tipo != item.Vazio {
+					if e3E == nil && e3.Tipo != item.Vazio {
+						j.atk(x-4, y, item.Vazio)
+						j.atk(x+2, y, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if e2E == nil && e2.Tipo != item.Vazio {
+				if e3E == nil && e3.Tipo != item.Vazio {
+					if e4E == nil && e4.Tipo != item.Vazio {
+						j.atk(x-5, y, item.Vazio)
+						j.atk(x+1, y, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+		}
+
+		// BAIXO
+		b, bE := j.CopiaCampo.GetItem(x, y+1)
+		b2, b2E := j.CopiaCampo.GetItem(x, y+2)
+		b3, b3E := j.CopiaCampo.GetItem(x, y+3)
+		b4, b4E := j.CopiaCampo.GetItem(x, y+4)
+		// CIMA
+		c, cE := j.CopiaCampo.GetItem(x, y-1)
+		c2, c2E := j.CopiaCampo.GetItem(x, y-2)
+		c3, c3E := j.CopiaCampo.GetItem(x, y-3)
+		c4, c4E := j.CopiaCampo.GetItem(x, y-4)
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if b2E == nil && b2.Tipo != item.Vazio {
+				if b3E == nil && b3.Tipo != item.Vazio {
+					if b4E == nil && b4.Tipo != item.Vazio {
+						j.atk(x, y-1, item.Vazio)
+						j.atk(x, y+5, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+					if cE == nil && c.Tipo != item.Vazio {
+						j.atk(x, y-2, item.Vazio)
+						j.atk(x, y+4, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+				if cE == nil && c.Tipo != item.Vazio {
+					if c2E == nil && c2.Tipo != item.Vazio {
+						j.atk(x, y-3, item.Vazio)
+						j.atk(x, y+3, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+			if cE == nil && c.Tipo != item.Vazio {
+				if c2E == nil && c2.Tipo != item.Vazio {
+					if c2E == nil && c2.Tipo != item.Vazio {
+						j.atk(x, y-4, item.Vazio)
+						j.atk(x, y+2, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+		}
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if c2E == nil && c2.Tipo != item.Vazio {
+				if c3E == nil && c3.Tipo != item.Vazio {
+					if c4E == nil && c4.Tipo != item.Vazio {
+						j.atk(x, y-5, item.Vazio)
+						j.atk(x, y+1, item.Vazio)
+						j.NossasNaves[item.PortaAviao]--
+						fmt.Printf("\nDestruiram um %s.\n", r("PortaAviao"))
+						break
+					}
+				}
+			}
+		}
+
+		break
+	case item.Hidroaviao:
+		j.atkVazioCruz(x, y)
+		// CIMA
+		c, cE := j.CopiaCampo.GetItem(x, y-2)
+		cEsq, cEsqE := j.CopiaCampo.GetItem(x-1, y-1)
+		cDir, cDirE := j.CopiaCampo.GetItem(x+1, y-1)
+		// BAIXO
+		b, bE := j.CopiaCampo.GetItem(x, y+2)
+		bEsq, bEsqE := j.CopiaCampo.GetItem(x-1, y+1)
+		bDir, bDirE := j.CopiaCampo.GetItem(x+1, y+1)
+		// LATERAL
+		d, dE := j.CopiaCampo.GetItem(x+2, y)
+		e, eE := j.CopiaCampo.GetItem(x-2, y)
+
+		if cE == nil && c.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x, y-2, "sup")
+				j.atkVazioDiagonal(x-1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if cDirE == nil && cDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x, y-2, "sup")
+				j.atkVazioDiagonal(x+1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		if bE == nil && b.Tipo != item.Vazio {
+			if bEsqE == nil && bEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x, y+2, "sup")
+				j.atkVazioDiagonal(x-1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x, y+2, "sup")
+				j.atkVazioDiagonal(x+1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		if dE == nil && d.Tipo != item.Vazio {
+			if cDirE == nil && cDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x+2, y, "sup")
+				j.atkVazioDiagonal(x+1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x+2, y, "sup")
+				j.atkVazioDiagonal(x+1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		if eE == nil && e.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x-2, y, "sup")
+				j.atkVazioDiagonal(x-1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if bEsqE == nil && bEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x-2, y, "sup")
+				j.atkVazioDiagonal(x-1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		if cDirE == nil && cDir.Tipo != item.Vazio {
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x+1, y-1, "sup")
+				j.atkVazioDiagonal(x-1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x+1, y-1, "sup")
+				j.atkVazioDiagonal(x+1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		if bEsqE == nil && bEsq.Tipo != item.Vazio {
+			if bDirE == nil && bDir.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x-1, y+1, "sup")
+				j.atkVazioDiagonal(x+1, y+1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+			if cEsqE == nil && cEsq.Tipo != item.Vazio {
+				j.atkVazioDiagonal(x, y, "sup")
+				j.atkVazioDiagonal(x-1, y+1, "sup")
+				j.atkVazioDiagonal(x-1, y-1, "sup")
+				j.NossasNaves[item.Hidroaviao]--
+				fmt.Printf("\nDestruiram um %s.\n", r("Hidroaviao"))
+				break
+			}
+		}
+
+		break
+	}
+
+	return j.checaSePerdeu()
 }
