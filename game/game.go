@@ -136,14 +136,26 @@ func (j *Jogo) sugereAtaque(x int, y int, tipo item.Nave) {
 	case item.Cruzador:
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		e, eE := j.CampoInimigo.GetItem(x, y-1)
+		if y < 7 || (eE == nil && e.Tipo != item.Vazio) {
+			j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		}
+		c, cE := j.CampoInimigo.GetItem(x-1, y)
+		if x < 7 || (cE == nil && c.Tipo != item.Vazio) {
+			j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		}
 		break
 	case item.PortaAviao:
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		e, eE := j.CampoInimigo.GetItem(x, y-1)
+		if y < 6 || (eE == nil && e.Tipo != item.Vazio) {
+			j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		}
+		c, cE := j.CampoInimigo.GetItem(x-1, y)
+		if x < 6 || (cE == nil && c.Tipo != item.Vazio) {
+			j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
+		}
 		break
 	case item.Hidroaviao:
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 2, y: y})
