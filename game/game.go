@@ -16,10 +16,19 @@ type Jogo struct {
 	Campo        *field.Campo
 	CampoInimigo *field.Campo
 	PilhaAtaques []Coordenadas
+	NavesInimigo map[item.Nave]int
 }
 
 func Novo() *Jogo {
 	j := &Jogo{Campo: field.Novo(GAME_SIZE), CampoInimigo: field.Novo(GAME_SIZE)}
+
+	j.NavesInimigo = make(map[item.Nave]int)
+
+	j.NavesInimigo[item.Hidroaviao] = 4
+	j.NavesInimigo[item.Submarino] = 4
+	j.NavesInimigo[item.Destroyer] = 3
+	j.NavesInimigo[item.Cruzador] = 2
+	j.NavesInimigo[item.PortaAviao] = 1
 
 	j.iniciaPilhaDeAtaque()
 
@@ -83,38 +92,44 @@ func (j *Jogo) atkVazioDiagonal(x int, y int) {
 func (j *Jogo) sugereAtaque(x int, y int, tipo item.Nave) {
 	switch tipo {
 	case item.Destroyer:
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		break
 	case item.Cruzador:
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		break
 	case item.PortaAviao:
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y})
 		break
 	case item.Hidroaviao:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 2, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 2, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 2})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 2})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 2, y: y})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 2, y: y})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y - 1})
-		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y - 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y + 1})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y + 1})
 		break
 	}
 }
 
 func (j *Jogo) checaSeGanhou() bool {
-	return false
+	ganhou := true
+	for _, qntd := range j.NavesInimigo {
+		if qntd != 0 {
+			ganhou = ganhou && false
+		}
+	}
+	return ganhou
 }
 
 func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
@@ -147,6 +162,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 	case item.Submarino:
 		j.atkVazioDiagonal(x, y)
 		j.atkVazioCruz(x, y)
+		j.NavesInimigo[item.Submarino]--
+
 		break
 	case item.Destroyer:
 		j.atkVazioDiagonal(x, y)
@@ -154,24 +171,32 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 		if dE == nil && d.Tipo != item.Vazio {
 			j.atk(x-1, y, item.Vazio)
 			j.atk(x+2, y, item.Vazio)
+			j.NavesInimigo[item.Destroyer]--
+
 			break
 		}
 		e, eE := j.CampoInimigo.GetItem(x-1, y)
 		if eE == nil && e.Tipo != item.Vazio {
 			j.atk(x+1, y, item.Vazio)
 			j.atk(x-2, y, item.Vazio)
+			j.NavesInimigo[item.Destroyer]--
+
 			break
 		}
 		c, cE := j.CampoInimigo.GetItem(x, y+1)
 		if cE == nil && c.Tipo != item.Vazio {
 			j.atk(x, y-1, item.Vazio)
 			j.atk(x, y+2, item.Vazio)
+			j.NavesInimigo[item.Destroyer]--
+
 			break
 		}
 		b, bE := j.CampoInimigo.GetItem(x, y-1)
 		if bE == nil && b.Tipo != item.Vazio {
 			j.atk(x, y+1, item.Vazio)
 			j.atk(x, y-2, item.Vazio)
+			j.NavesInimigo[item.Destroyer]--
+
 			break
 		}
 		break
@@ -191,11 +216,15 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if d3E == nil && d3.Tipo != item.Vazio {
 					j.atk(x-1, y, item.Vazio)
 					j.atk(x+4, y, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 				if eE == nil && e.Tipo != item.Vazio {
 					j.atk(x-2, y, item.Vazio)
 					j.atk(x+3, y, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -203,6 +232,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if e2E == nil && e2.Tipo != item.Vazio {
 					j.atk(x-3, y, item.Vazio)
 					j.atk(x+2, y, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -213,6 +244,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if e3E == nil && e3.Tipo != item.Vazio {
 					j.atk(x-4, y, item.Vazio)
 					j.atk(x+1, y, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -232,11 +265,15 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if b3E == nil && b3.Tipo != item.Vazio {
 					j.atk(x, y-1, item.Vazio)
 					j.atk(x, y+4, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 				if cE == nil && c.Tipo != item.Vazio {
 					j.atk(x, y-2, item.Vazio)
 					j.atk(x, y+3, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -244,6 +281,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if c2E == nil && c2.Tipo != item.Vazio {
 					j.atk(x, y-3, item.Vazio)
 					j.atk(x, y+2, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -254,6 +293,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				if c3E == nil && c3.Tipo != item.Vazio {
 					j.atk(x, y-4, item.Vazio)
 					j.atk(x, y+1, item.Vazio)
+					j.NavesInimigo[item.Cruzador]--
+
 					break
 				}
 			}
@@ -278,11 +319,15 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if d4E == nil && d4.Tipo != item.Vazio {
 						j.atk(x-1, y, item.Vazio)
 						j.atk(x+5, y, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 					if eE == nil && e.Tipo != item.Vazio {
 						j.atk(x-2, y, item.Vazio)
 						j.atk(x+4, y, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -290,6 +335,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if e2E == nil && e2.Tipo != item.Vazio {
 						j.atk(x-3, y, item.Vazio)
 						j.atk(x+3, y, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -299,6 +346,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if e3E == nil && e3.Tipo != item.Vazio {
 						j.atk(x-4, y, item.Vazio)
 						j.atk(x+2, y, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -311,6 +360,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if e4E == nil && e4.Tipo != item.Vazio {
 						j.atk(x-5, y, item.Vazio)
 						j.atk(x+1, y, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -334,11 +385,15 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if b4E == nil && b4.Tipo != item.Vazio {
 						j.atk(x, y-1, item.Vazio)
 						j.atk(x, y+5, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 					if cE == nil && c.Tipo != item.Vazio {
 						j.atk(x, y-2, item.Vazio)
 						j.atk(x, y+4, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -346,6 +401,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if c2E == nil && c2.Tipo != item.Vazio {
 						j.atk(x, y-3, item.Vazio)
 						j.atk(x, y+3, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -355,6 +412,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if c2E == nil && c2.Tipo != item.Vazio {
 						j.atk(x, y-4, item.Vazio)
 						j.atk(x, y+2, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -367,6 +426,8 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 					if c4E == nil && c4.Tipo != item.Vazio {
 						j.atk(x, y-5, item.Vazio)
 						j.atk(x, y+1, item.Vazio)
+						j.NavesInimigo[item.PortaAviao]--
+
 						break
 					}
 				}
@@ -393,12 +454,16 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x, y-2)
 				j.atkVazioDiagonal(x-1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 			if cDirE == nil && cDir.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x, y-2)
 				j.atkVazioDiagonal(x+1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 		}
@@ -408,12 +473,16 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x, y+2)
 				j.atkVazioDiagonal(x-1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 			if bDirE == nil && bDir.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x, y+2)
 				j.atkVazioDiagonal(x+1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 		}
@@ -423,12 +492,16 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x+2, y)
 				j.atkVazioDiagonal(x+1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 			if bDirE == nil && bDir.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x+2, y)
 				j.atkVazioDiagonal(x+1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 		}
@@ -438,12 +511,16 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x-2, y)
 				j.atkVazioDiagonal(x-1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 			if bEsqE == nil && bEsq.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x-2, y)
 				j.atkVazioDiagonal(x-1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
 				break
 			}
 		}
@@ -453,11 +530,17 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x+1, y-1)
 				j.atkVazioDiagonal(x-1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
+				break
 			}
 			if bDirE == nil && bDir.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x+1, y-1)
 				j.atkVazioDiagonal(x+1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
+				break
 			}
 		}
 
@@ -466,21 +549,22 @@ func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x-1, y+1)
 				j.atkVazioDiagonal(x+1, y+1)
+				j.NavesInimigo[item.Hidroaviao]--
+
+				break
 			}
 			if cEsqE == nil && cEsq.Tipo != item.Vazio {
 				j.atkVazioDiagonal(x, y)
 				j.atkVazioDiagonal(x-1, y+1)
 				j.atkVazioDiagonal(x-1, y-1)
+				j.NavesInimigo[item.Hidroaviao]--
+
+				break
 			}
 		}
 
 		break
 	}
 
-	if j.checaSeGanhou() {
-		return true
-	} else {
-		return false
-	}
-
+	return j.checaSeGanhou()
 }
