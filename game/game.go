@@ -101,6 +101,10 @@ func (j *Jogo) sugereAtaque(x int, y int, tipo item.Nave) {
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 1})
 		break
 	case item.Hidroaviao:
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y - 2})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x, y: y + 2})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 2, y: y})
+		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 2, y: y})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y + 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x + 1, y: y - 1})
 		j.PilhaAtaques = append(j.PilhaAtaques, Coordenadas{x: x - 1, y: y + 1})
@@ -115,7 +119,29 @@ func (j *Jogo) checaSeGanhou() bool {
 
 func (j *Jogo) RetornoDeAtaque(x int, y int, tipo item.Nave) bool {
 	j.atk(x, y, tipo)
-	j.sugereAtaque(x, y, tipo)
+	if tipo == item.Hidroaviao {
+		bD, bDE := j.CampoInimigo.GetItem(x+1, y+1)
+		cD, cDE := j.CampoInimigo.GetItem(x+1, y-1)
+		bE, bEE := j.CampoInimigo.GetItem(x-1, y+1)
+		cE, cEE := j.CampoInimigo.GetItem(x-1, y-1)
+
+		sugere := true
+		if bDE == nil && bD.Tipo == item.Hidroaviao {
+			sugere = false
+		} else if cDE == nil && cD.Tipo == item.Hidroaviao {
+			sugere = false
+		} else if bEE == nil && bE.Tipo == item.Hidroaviao {
+			sugere = false
+		} else if cEE == nil && cE.Tipo == item.Hidroaviao {
+			sugere = false
+		}
+
+		if sugere {
+			j.sugereAtaque(x, y, tipo)
+		}
+	} else {
+		j.sugereAtaque(x, y, tipo)
+	}
 
 	switch tipo {
 	case item.Submarino:
